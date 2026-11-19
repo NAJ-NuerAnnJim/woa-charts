@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credits - NAJ - WoA Charts</title>
+    <link rel="icon" type="image/png" href="web-data/picture/Logoicon1.png">
+    <script>
+        if (localStorage.getItem("app_theme") === "dark") {
+            document.documentElement.classList.add("dark-mode");
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ==========================================
+         HEADER & NAVIGATION
+         ========================================== -->
+    <header>
+        <div class="topbar">
+            <div class="topbar-left">
+                <a href="index.html" class="logo">
+                    <img src="web-data/picture/Logoicon1.png" alt="Logo">
+                    <span id="logoText" class="logo-text">NAJ - WoA Charts</span>
+                </a>
+            </div>
+
+            <div class="topbar-center"></div>
+
+            <div class="topbar-right">
+                <div class="menu">
+                    <div class="hamburger" id="hamburgerMenu" role="button" tabindex="0" aria-label="Toggle menu" aria-expanded="false">
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-card">
+            <h2>Menu</h2>
+            <button onclick="navigateTo('index.html')" style="--menu-index: 0;">WoA Charts</button>
+            <button onclick="navigateTo('credits.html')" style="--menu-index: 1;">Credits</button>
+            <button onclick="navigateTo('settings.html')" class="settings-btn" title="Settings" aria-label="Settings" style="--menu-index: 2;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ==========================================
+         MAIN CONTENT (CREDITS & DISCLAIMER)
+         ========================================== -->
+    <main class="NAJ-container">
+        <div class="settings-wrapper">
+            <div class="settings-header reveal-section" style="--stagger-delay: 0ms;">
+                <h1>Credits &amp; Disclaimer</h1>
+                <p>Source attributions and usage policy for NAJ - WoA Charts.</p>
+            </div>
+
+            <!-- Section 1: Airport Charts Source -->
+            <section class="settings-card reveal-section" style="--stagger-delay: 75ms;">
+                <h2 class="settings-section-title">Airport Charts Source</h2>
+                <p class="credits-body-text">
+                    All airport ground charts and reference diagrams featured on this website are sourced from <strong>WoA Info</strong>. Full credit goes to the original creators and contributors who compiled and maintained these resources.
+                </p>
+
+                <a href="https://sites.google.com/view/woainfo" target="_blank" rel="noopener noreferrer" class="credits-source-box">
+                    <div class="credits-source-info">
+                        <span class="credits-source-label">Original Source</span>
+                        <span class="credits-source-url">sites.google.com/view/woainfo</span>
+                    </div>
+                    <span class="zoom-pill">
+                        <span>Visit Source</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                    </span>
+                </a>
+            </section>
+
+            <!-- Section 2: Non-Commercial Disclaimer -->
+            <section class="settings-card reveal-section" style="--stagger-delay: 150ms;">
+                <h2 class="settings-section-title">Non-Commercial Use Policy</h2>
+                <div class="credits-notice-box">
+                    <p class="credits-body-text">
+                        <strong>No Commercial Intent:</strong> This website is a non-profit fan-made utility created strictly for personal, educational, and community gameplay assistance in <em>World of Airports (WoA)</em>.
+                    </p>
+                    <p class="credits-body-text">
+                        We do not claim ownership over any of the original chart graphics, nor do we monetize, sell, or use these materials for any commercial purpose whatsoever. If you are an original creator and wish to request updates or removal, please contact us via the links in the footer.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Section 3: Website Development -->
+            <section class="settings-card reveal-section" style="--stagger-delay: 225ms;">
+                <h2 class="settings-section-title">Website Development</h2>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-title">NAJ - WoA Charts Hub</span>
+                        <span class="setting-desc">Interface design, search directory, and high-resolution chart viewer developed by <strong>EdwardMarico</strong>.</span>
+                    </div>
+                    <a href="https://github.com/EdwardMarico" target="_blank" rel="noopener noreferrer" class="credits-github-btn">GitHub</a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- ==========================================
+         FOOTER
+         ========================================== -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a href="index.html" class="footer-logo">
+                    <img src="web-data/picture/Logoicon1.png" alt="Logo">
+                    <span>NAJ</span>
+                </a>
+                <p class="footer-desc">WoA charts hub. You can find the latest charts and updates here.</p>
+            </div>
+
+            <div class="footer-links-group">
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Charts</a></li>
+                        <li><a href="credits.html">Credits</a></li>
+                        <li><a href="settings.html">Settings</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="https://github.com/EdwardMarico" target="_blank">GitHub</a></li>
+                        <li><a href="mailto:thiraphat.yt.ac@gmail.com">Email Us</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Credits</h4>
+                    <p>Designed &amp; Developed by <strong>EdwardMarico</strong></p>
+                    <p class="copyright">&copy; 2026 NAJ. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="context-menu.js"></script>
+    <script src="search.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const isDark = (localStorage.getItem("app_theme") || "light") === "dark";
+            const isAnim = localStorage.getItem("setting_enableAnimation") !== "false";
+
+            document.documentElement.classList.toggle("dark-mode", isDark);
+            document.body.classList.toggle("dark-mode", isDark);
+            document.body.classList.toggle("no-animations", !isAnim);
+
+            const revealSections = document.querySelectorAll(".reveal-section");
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    revealSections.forEach((sec) => sec.classList.add("is-revealed"));
+                }, 85);
+            });
+        });
+    </script>
+</body>
+</html>

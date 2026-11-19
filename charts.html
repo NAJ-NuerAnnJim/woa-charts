@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAJ - WoA Charts</title>
+    <link rel="icon" type="image/png" href="web-data/picture/Logoicon1.png">
+    <script>
+        if (localStorage.getItem("app_theme") === "dark") {
+            document.documentElement.classList.add("dark-mode");
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ==========================================
+         HEADER & NAVIGATION + CENTERED TOPBAR SEARCH
+         ========================================== -->
+    <header>
+        <div class="topbar">
+            <div class="topbar-left">
+                <a href="index.html" class="logo">
+                    <img src="web-data/picture/Logoicon1.png" alt="Logo">
+                    <span id="logoText" class="logo-text">NAJ - WoA Charts</span>
+                </a>
+            </div>
+
+            <div class="topbar-center">
+                <div class="topbar-search" id="topbarSearchBox">
+                    <span class="search-icon" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </span>
+                    <input
+                        type="text"
+                        id="topbarSearchInput"
+                        placeholder="Search airports, pages, settings..."
+                        autocomplete="off"
+                        aria-label="Search site"
+                        aria-expanded="false"
+                        aria-controls="searchDropdown"
+                    >
+                    <button type="button" id="clearSearchBtn" class="clear-search-btn" title="Clear search" aria-label="Clear search">&times;</button>
+
+                    <!-- Dropdown แสดงผลลัพธ์การค้นหา (จัดการโดย search.js) -->
+                    <div class="search-dropdown" id="searchDropdown" role="listbox" aria-label="Search suggestions"></div>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <div class="menu">
+                    <div class="hamburger" id="hamburgerMenu" role="button" tabindex="0" aria-label="Toggle menu" aria-expanded="false">
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-card">
+            <h2>Menu</h2>
+            <button onclick="navigateTo('index.html')" style="--menu-index: 0;">WoA Charts</button>
+            <button onclick="navigateTo('credits.html')" style="--menu-index: 1;">Credits</button>
+            <button onclick="navigateTo('settings.html')" class="settings-btn" title="Settings" aria-label="Settings" style="--menu-index: 2;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ==========================================
+         MAIN CONTENT (INTRO + AIRPORT CHARTS LIST)
+         ========================================== -->
+    <main class="NAJ-container">
+        <div class="charts-wrapper">
+            <section class="charts-intro-banner reveal-section">
+                <div class="intro-text">
+                    <h1>Airport Charts Directory</h1>
+                    <p>
+                        Select an airport from the list below to open its dedicated Airport Chart viewer with detailed zoom controls,
+                        or search by IATA code (e.g., <strong>BKK</strong>, <strong>LHR</strong>, <strong>NGO</strong>), airport name, or city using the search bar above.
+                    </p>
+                </div>
+                <div class="charts-count-badge" id="chartsCountBadge">Loading...</div>
+            </section>
+
+            <!-- รายการสนามบินจะถูกโหลดจาก charts-data.json -->
+            <section class="charts-list" id="airportChartsList" aria-label="Airport Charts List"></section>
+
+            <div class="charts-empty-state" id="chartsEmptyState">
+                <p id="emptyStateMessage">No airport charts found matching the search query "<span id="emptyQueryText"></span>"</p>
+                <button type="button" id="resetSearchStateBtn" class="primary-btn">Show All Charts</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ==========================================
+         FOOTER
+         ========================================== -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a href="index.html" class="footer-logo">
+                    <img src="web-data/picture/Logoicon1.png" alt="Logo">
+                    <span>NAJ</span>
+                </a>
+                <p class="footer-desc">WoA charts hub. You can find the latest charts and updates here.</p>
+            </div>
+
+            <div class="footer-links-group">
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Charts</a></li>
+                        <li><a href="credits.html">Credits</a></li>
+                        <li><a href="settings.html">Settings</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="https://github.com/EdwardMarico" target="_blank">GitHub</a></li>
+                        <li><a href="mailto:thiraphat.yt.ac@gmail.com">Email Us</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Credits</h4>
+                    <p>Designed &amp; Developed by <strong>EdwardMarico</strong></p>
+                    <p class="copyright">&copy; 2026 NAJ. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="context-menu.js"></script>
+    <script src="search.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            // ซิงค์ธีมและแอนิเมชันจากหน้า Settings
+            const isDark = (localStorage.getItem("app_theme") || "light") === "dark";
+            const isAnim = localStorage.getItem("setting_enableAnimation") !== "false";
+            document.documentElement.classList.toggle("dark-mode", isDark);
+            document.body.classList.toggle("dark-mode", isDark);
+            document.body.classList.toggle("no-animations", !isAnim);
+
+            const chartsListEl = document.getElementById("airportChartsList");
+            const chartsCountBadge = document.getElementById("chartsCountBadge");
+            const emptyStateEl = document.getElementById("chartsEmptyState");
+            const emptyStateMessage = document.getElementById("emptyStateMessage");
+            const resetSearchStateBtn = document.getElementById("resetSearchStateBtn");
+            const introBanner = document.querySelector(".charts-intro-banner");
+
+            // เปิดตัว Banner ด้านบนอย่างนุ่มนวลหลังโหลดหน้าเล็กน้อย
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    if (introBanner) introBanner.classList.add("is-revealed");
+                }, 90);
+            });
+
+            // แปลงข้อมูลสนามบินให้รองรับทั้ง "file" เดี่ยว และ "charts" หลายแบบ
+            function normalizeAirportCharts(airport) {
+                if (Array.isArray(airport.charts) && airport.charts.length > 0) {
+                    return airport.charts
+                        .filter((c) => c && c.file)
+                        .map((c, idx) => ({
+                            name: (c.name || `Taxi Layout ${idx + 1}`).trim(),
+                            file: String(c.file).trim()
+                        }));
+                }
+                if (airport.file) {
+                    return [{
+                        name: (airport.chartName || "Airport Chart").trim(),
+                        file: String(airport.file).trim()
+                    }];
+                }
+                return [];
+            }
+
+            // ปิด Card Dropdown ทั้งหมดบนหน้า Directory
+            function closeAllCardDropdowns(exceptItem = null) {
+                document.querySelectorAll(".chart-list-item.is-dropdown-open").forEach((card) => {
+                    if (card !== exceptItem) {
+                        card.classList.remove("is-dropdown-open");
+                        const btn = card.querySelector(".chart-dropdown-btn");
+                        if (btn) btn.setAttribute("aria-expanded", "false");
+                    }
+                });
+            }
+
+            document.addEventListener("click", (e) => {
+                if (!e.target.closest(".chart-list-item")) {
+                    closeAllCardDropdowns();
+                }
+            });
+
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") {
+                    closeAllCardDropdowns();
+                }
+            });
+
+            // ย่อภาพ Thumbnail ลง Canvas ขนาดเล็ก (168x112) แล้วคืน RAM/GPU ทันที
+            function attachThumbnailDownscaler(thumbBox, img) {
+                const downscale = () => {
+                    if (!img.naturalWidth || !img.naturalHeight) return;
+
+                    const canvas = document.createElement("canvas");
+                    canvas.width = 168;
+                    canvas.height = 112;
+                    canvas.setAttribute("aria-label", img.alt || "Airport Chart Thumbnail");
+
+                    const ctx = canvas.getContext("2d", { alpha: false });
+                    if (!ctx) return;
+
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = "low";
+
+                    const scale = Math.max(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
+                    const drawW = img.naturalWidth * scale;
+                    const drawH = img.naturalHeight * scale;
+                    const offsetX = (canvas.width - drawW) / 2;
+                    const offsetY = (canvas.height - drawH) / 2;
+
+                    ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+                    thumbBox.appendChild(canvas);
+                    img.src = "";
+                    img.remove();
+                };
+
+                if (img.complete && img.naturalWidth > 0) {
+                    downscale();
+                } else {
+                    img.addEventListener("load", downscale, { once: true });
+                }
+            }
+
+            // โหลดข้อมูลสนามบินจาก charts-data.json
+            let chartsData = [];
+            try {
+                const response = await fetch("charts-data.json");
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const parsed = await response.json();
+                chartsData = Array.isArray(parsed) ? parsed : [];
+            } catch (err) {
+                console.error("Failed to load charts-data.json:", err);
+                chartsCountBadge.textContent = "0 Charts";
+                chartsListEl.style.display = "none";
+                emptyStateEl.classList.add("is-visible");
+                emptyStateMessage.textContent = "Unable to load charts-data.json. Please open this site via a web server or Live Server.";
+                resetSearchStateBtn.style.display = "none";
+                return;
+            }
+
+            // สร้างรายการสนามบินทั้งหมดจาก JSON พร้อม Staggered Delay
+            const chartRecords = chartsData.map((airport, idx) => {
+                const iata = (airport.iata || "").trim().toUpperCase();
+                const name = (airport.name || "").trim();
+                const location = (airport.location || "").trim();
+                const charts = normalizeAirportCharts(airport);
+                const subNames = charts.map((c) => c.name).join(" ");
+                const hasMultiple = charts.length > 1;
+                const firstFile = charts[0] ? charts[0].file : "";
+                const defaultHref = `viewer.html?iata=${encodeURIComponent(iata)}`;
+
+                const cardEl = document.createElement(hasMultiple ? "div" : "a");
+                if (!hasMultiple) {
+                    cardEl.href = defaultHref;
+                } else {
+                    cardEl.setAttribute("role", "button");
+                    cardEl.setAttribute("tabindex", "0");
+                }
+                cardEl.className = `chart-list-item${hasMultiple ? " has-multiple-charts" : ""}`;
+                cardEl.dataset.file = firstFile;
+
+                const staggerMs = Math.min(idx * 45, 450);
+                cardEl.style.setProperty("--stagger-delay", `${staggerMs}ms`);
+
+                const thumbBox = document.createElement("div");
+                thumbBox.className = "chart-thumb-box";
+
+                const img = document.createElement("img");
+                img.src = firstFile;
+                img.alt = `${iata} Chart Thumbnail`;
+                img.loading = "lazy";
+                img.decoding = "async";
+                thumbBox.appendChild(img);
+                attachThumbnailDownscaler(thumbBox, img);
+
+                if (hasMultiple) {
+                    const countPip = document.createElement("span");
+                    countPip.className = "thumb-multi-badge";
+                    countPip.textContent = `${charts.length}`;
+                    thumbBox.appendChild(countPip);
+                }
+
+                const infoBox = document.createElement("div");
+                infoBox.className = "chart-item-info";
+
+                const topRow = document.createElement("div");
+                topRow.className = "chart-item-top";
+
+                const iataTag = document.createElement("span");
+                iataTag.className = "chart-iata-tag";
+                iataTag.textContent = iata;
+
+                const nameHeading = document.createElement("h3");
+                nameHeading.className = "chart-airport-name";
+                nameHeading.textContent = name;
+
+                topRow.append(iataTag, nameHeading);
+
+                const locationPara = document.createElement("p");
+                locationPara.className = "chart-airport-location";
+                locationPara.textContent = location;
+
+                infoBox.append(topRow, locationPara);
+
+                const actionBox = document.createElement("div");
+                actionBox.className = "chart-item-action";
+
+                if (!hasMultiple) {
+                    actionBox.innerHTML = `
+                        <span class="zoom-pill">
+                            <span>View Chart</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <polyline points="9 21 3 21 3 15"></polyline>
+                                <line x1="21" y1="3" x2="14" y2="10"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+                            </svg>
+                        </span>
+                    `;
+
+                    cardEl.addEventListener("click", (e) => {
+                        if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+                        if (typeof navigateTo === "function") {
+                            e.preventDefault();
+                            navigateTo(defaultHref);
+                        }
+                    });
+                } else {
+                    const dropdownWrap = document.createElement("div");
+                    dropdownWrap.className = "card-taxi-dropdown";
+
+                    const dropdownBtn = document.createElement("button");
+                    dropdownBtn.type = "button";
+                    dropdownBtn.className = "zoom-pill chart-dropdown-btn";
+                    dropdownBtn.setAttribute("aria-haspopup", "listbox");
+                    dropdownBtn.setAttribute("aria-expanded", "false");
+                    dropdownBtn.innerHTML = `
+                        <span>Select Taxi (${charts.length})</span>
+                        <svg class="dropdown-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    `;
+
+                    const dropdownMenu = document.createElement("div");
+                    dropdownMenu.className = "card-taxi-menu";
+                    dropdownMenu.setAttribute("role", "listbox");
+
+                    const menuHeader = document.createElement("div");
+                    menuHeader.className = "card-taxi-menu-header";
+                    menuHeader.textContent = `${iata} — Choose Taxi Layout`;
+                    dropdownMenu.appendChild(menuHeader);
+
+                    charts.forEach((chartItem, chartIdx) => {
+                        const chartHref = `viewer.html?iata=${encodeURIComponent(iata)}&chart=${chartIdx}`;
+                        const optionLink = document.createElement("a");
+                        optionLink.href = chartHref;
+                        optionLink.className = "card-taxi-option";
+                        optionLink.setAttribute("role", "option");
+
+                        const indexBadge = document.createElement("span");
+                        indexBadge.className = "taxi-option-index";
+                        indexBadge.textContent = `${chartIdx + 1}`;
+
+                        const labelSpan = document.createElement("span");
+                        labelSpan.className = "taxi-option-label";
+                        labelSpan.textContent = chartItem.name;
+
+                        const arrowSpan = document.createElement("span");
+                        arrowSpan.className = "taxi-option-arrow";
+                        arrowSpan.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+
+                        optionLink.append(indexBadge, labelSpan, arrowSpan);
+
+                        optionLink.addEventListener("click", (e) => {
+                            e.stopPropagation();
+                            if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+                            if (typeof navigateTo === "function") {
+                                e.preventDefault();
+                                navigateTo(chartHref);
+                            }
+                        });
+
+                        dropdownMenu.appendChild(optionLink);
+                    });
+
+                    dropdownWrap.append(dropdownBtn, dropdownMenu);
+                    actionBox.appendChild(dropdownWrap);
+
+                    const toggleCardDropdown = (e) => {
+                        if (e.target.closest(".card-taxi-menu")) return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const willOpen = !cardEl.classList.contains("is-dropdown-open");
+                        closeAllCardDropdowns(cardEl);
+                        cardEl.classList.toggle("is-dropdown-open", willOpen);
+                        dropdownBtn.setAttribute("aria-expanded", String(willOpen));
+                    };
+
+                    cardEl.addEventListener("click", toggleCardDropdown);
+                    cardEl.addEventListener("keydown", (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            if (document.activeElement === cardEl || document.activeElement === dropdownBtn) {
+                                toggleCardDropdown(e);
+                            }
+                        }
+                    });
+                }
+
+                cardEl.append(thumbBox, infoBox, actionBox);
+                chartsListEl.appendChild(cardEl);
+                return {
+                    iata,
+                    name,
+                    location,
+                    subNames,
+                    element: cardEl,
+                    iataTag,
+                    nameHeading,
+                    locationPara
+                };
+            });
+
+            // กระตุ้น Staggered Entrance Animation หลังจาก DOM วาดเสร็จ
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    chartRecords.forEach((rec) => rec.element.classList.add("is-revealed"));
+                }, 130);
+            });
+
+            const totalCharts = chartRecords.length;
+            chartsCountBadge.textContent = `${totalCharts} Airports`;
+
+            // ตัวช่วยไฮไลท์และให้คะแนนจาก search.js
+            const highlightText = (text, query) => {
+                if (window.NAJSearch && typeof window.NAJSearch.buildHighlightedFragment === "function") {
+                    return window.NAJSearch.buildHighlightedFragment(text, query);
+                }
+                return document.createTextNode(text);
+            };
+
+            const computeScore = (record, query) => {
+                if (window.NAJSearch && typeof window.NAJSearch.scoreTextFields === "function") {
+                    return window.NAJSearch.scoreTextFields(
+                        [
+                            { text: record.iata, weight: 1.25 },
+                            { text: record.name, weight: 1.15 },
+                            { text: record.location, weight: 1.0 },
+                            { text: record.subNames, weight: 0.9 }
+                        ],
+                        query
+                    ).score;
+                }
+                const q = query.toLowerCase();
+                return `${record.iata} ${record.name} ${record.location} ${record.subNames}`.toLowerCase().includes(q) ? 1 : 0;
+            };
+
+            // กรองรายการการ์ดสนามบินบนหน้าตามคำค้นหาใน Topbar
+            function filterChartsList(filterText = "") {
+                const query = filterText.trim();
+                let visibleIndex = 0;
+
+                chartRecords.forEach((record) => {
+                    const score = query ? computeScore(record, query) : 1;
+                    const isMatch = score > 0;
+
+                    if (isMatch) {
+                        const wasHidden = record.element.style.display === "none";
+                        record.element.style.display = "flex";
+                        const staggerMs = Math.min(visibleIndex * 28, 320);
+                        record.element.style.setProperty("--stagger-delay", `${staggerMs}ms`);
+                        visibleIndex++;
+
+                        if (wasHidden) {
+                            record.element.classList.remove("is-revealed");
+                            requestAnimationFrame(() => {
+                                record.element.classList.add("is-revealed");
+                            });
+                        }
+                    } else {
+                        record.element.style.display = "none";
+                        record.element.classList.remove("is-dropdown-open");
+                    }
+
+                    record.iataTag.replaceChildren(highlightText(record.iata, query));
+                    record.nameHeading.replaceChildren(highlightText(record.name, query));
+                    record.locationPara.replaceChildren(highlightText(record.location, query));
+                });
+
+                chartsCountBadge.textContent = query
+                    ? `${visibleIndex} / ${totalCharts} Airports`
+                    : `${totalCharts} Airports`;
+
+                if (visibleIndex === 0) {
+                    chartsListEl.style.display = "none";
+                    emptyStateEl.classList.add("is-visible");
+                    emptyStateMessage.innerHTML = `No airport charts found matching the search query "<span id="emptyQueryText"></span>"`;
+                    document.getElementById("emptyQueryText").textContent = query;
+                } else {
+                    chartsListEl.style.display = "flex";
+                    emptyStateEl.classList.remove("is-visible");
+                }
+            }
+
+            // เชื่อม Event การพิมพ์และปุ่ม Clear / Reset เข้ากับ search.js
+            if (window.NAJSearch && typeof window.NAJSearch.onSearch === "function") {
+                window.NAJSearch.onSearch((query) => {
+                    filterChartsList(query);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

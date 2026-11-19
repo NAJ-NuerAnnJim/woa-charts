@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airport Chart Viewer - NAJ - WoA Charts</title>
+    <link rel="icon" type="image/png" href="web-data/picture/Logoicon1.png">
+    <script>
+        if (localStorage.getItem("app_theme") === "dark") {
+            document.documentElement.classList.add("dark-mode");
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="viewer-page-body">
+    <div id="chartViewerPage" class="chart-viewer-page">
+        <!-- แถบควบคุมด้านบน -->
+        <div class="viewer-toolbar">
+            <div class="viewer-title-group">
+                <a href="index.html" id="backToDirectoryBtn" class="viewer-back-btn" title="Back to Directory (ESC)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Back</span>
+                </a>
+                
+                <span class="viewer-iata-badge" id="viewerIata">---</span>
+                <div class="viewer-name-wrap">
+                    <h1 id="viewerTitle">Loading Chart...</h1>
+                    <span id="viewerSubtitle">NAJ - WoA Charts</span>
+                </div>
+            </div>
+
+            <div class="viewer-controls">
+                <!-- Dropdown เลือกผัง Taxiing (แสดงอัตโนมัติเมื่อสนามบินมีหลายผัง) -->
+                <div class="viewer-taxi-dropdown" id="viewerTaxiDropdown" style="display: none;">
+                    <button type="button" id="viewerTaxiSelectBtn" class="viewer-taxi-select-btn" aria-haspopup="listbox" aria-expanded="false" title="Switch Taxiing Layout">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+                            <line x1="8" y1="2" x2="8" y2="18"></line>
+                            <line x1="16" y1="6" x2="16" y2="22"></line>
+                        </svg>
+                        <span id="viewerCurrentTaxiName" class="viewer-current-taxi-name">Taxi Layout</span>
+                        <svg class="dropdown-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div class="viewer-taxi-menu" id="viewerTaxiMenu" role="listbox" aria-label="Select Taxiing Chart"></div>
+                </div>
+                
+                <!-- ปุ่มหมุน 90° -->
+                <button type="button" id="rotateLeftBtn" class="viewer-btn" style="--ctrl-index: 0;" title="Rotate Left 90° (Shift + R)" aria-label="Rotate Left 90 degrees">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                        <path d="M3 3v5h5"></path>
+                    </svg>
+                </button>
+                <button type="button" id="rotateRightBtn" class="viewer-btn" style="--ctrl-index: 1;" title="Rotate Right 90° (R)" aria-label="Rotate Right 90 degrees">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
+                        <path d="M21 3v5h-5"></path>
+                    </svg>
+                </button>
+
+                <!-- แถบเลื่อนหมุนแบบละเอียด (-180° ถึง +180°) -->
+                <div class="rotation-control-group" style="--ctrl-index: 2;" title="Fine Rotation (Q / E or Shift + Scroll)">
+                    <input type="range" id="rotationSlider" class="rotation-slider" min="-180" max="180" step="1" value="0" aria-label="Fine Rotation Angle">
+                    <button type="button" id="rotationDegBtn" class="viewer-btn viewer-btn-text rotation-deg-btn" title="Click to reset angle to 0°">0°</button>
+                </div>
+
+                <span style="--ctrl-index: 3; width: 1px; height: 20px; background: rgba(255, 255, 255, 0.15); margin: 0 2px;" aria-hidden="true"></span>
+
+                <!-- ปุ่มซูมและรีเซ็ต -->
+                <button type="button" id="zoomOutBtn" class="viewer-btn" style="--ctrl-index: 4;" title="Zoom Out (-)">−</button>
+                <span id="zoomLevelText" class="zoom-level-text" style="--ctrl-index: 5;">100%</span>
+                <button type="button" id="zoomInBtn" class="viewer-btn" style="--ctrl-index: 6;" title="Zoom In (+)">+</button>
+                <button type="button" id="zoomResetBtn" class="viewer-btn viewer-btn-text" style="--ctrl-index: 7;" title="Reset All (0)">Reset</button>
+            </div>
+        </div>
+
+        <!-- พื้นที่แสดงรูปภาพที่ซูม หมุน และลากได้ -->
+        <div class="viewer-stage" id="viewerStage">
+            <img id="viewerImage" src="" alt="Airport Chart Preview" draggable="false">
+            <div id="viewerErrorState" class="viewer-error-state" style="display: none;">
+                <p>Unable to load the requested airport chart.</p>
+                <a href="index.html" class="primary-btn" style="text-decoration: none;">Return to Directory</a>
+            </div>
+        </div>
+
+        <!-- แถบคำแนะนำการใช้งานด้านล่าง -->
+        <div class="viewer-hint-bar">
+            <span>Scroll to zoom</span>
+            <span>|</span>
+            <span>Shift + Scroll or Q / E to fine-rotate</span>
+            <span>|</span>
+            <span>R to rotate 90°</span>
+            <span>|</span>
+            <span>Drag to pan</span>
+            <span>|</span>
+            <span>ESC to go back</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="context-menu.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const isDark = (localStorage.getItem("app_theme") || "light") === "dark";
+            const isAnim = localStorage.getItem("setting_enableAnimation") !== "false";
+            document.documentElement.classList.toggle("dark-mode", isDark);
+            document.body.classList.toggle("dark-mode", isDark);
+            document.body.classList.toggle("no-animations", !isAnim);
+            document.body.classList.add("fade-in");
+
+            function normalizeAirportCharts(airport) {
+                if (Array.isArray(airport.charts) && airport.charts.length > 0) {
+                    return airport.charts
+                        .filter((c) => c && c.file)
+                        .map((c, idx) => ({
+                            name: (c.name || `Taxi Layout ${idx + 1}`).trim(),
+                            file: String(c.file).trim()
+                        }));
+                }
+                if (airport.file) {
+                    return [{
+                        name: (airport.chartName || "Airport Chart").trim(),
+                        file: String(airport.file).trim()
+                    }];
+                }
+                return [];
+            }
+
+            // 1. ค้นหาข้อมูลสนามบินจาก charts-data.json ด้วยรหัส IATA และ index ของผัง Taxi
+            const params = new URLSearchParams(window.location.search);
+            const iataParam = (params.get("iata") || "").trim().toUpperCase();
+            const chartParam = params.get("chart");
+
+            let matchedAirport = null;
+            if (iataParam) {
+                try {
+                    const response = await fetch("charts-data.json");
+                    if (response.ok) {
+                        const chartsData = await response.json();
+                        if (Array.isArray(chartsData)) {
+                            matchedAirport = chartsData.find((c) => (c.iata || "").trim().toUpperCase() === iataParam);
+                        }
+                    }
+                } catch (err) {
+                    console.error("Failed to load charts-data.json:", err);
+                }
+            }
+
+            const iata = matchedAirport ? matchedAirport.iata.trim().toUpperCase() : iataParam;
+            const name = matchedAirport ? matchedAirport.name : (params.get("name") || "").trim();
+            const location = matchedAirport ? matchedAirport.location : (params.get("location") || "").trim();
+
+            let airportCharts = matchedAirport ? normalizeAirportCharts(matchedAirport) : [];
+            if (airportCharts.length === 0 && params.get("file")) {
+                airportCharts = [{
+                    name: (params.get("chartName") || "Airport Chart").trim(),
+                    file: params.get("file").trim()
+                }];
+            }
+
+            // หา index เริ่มต้นของผังที่เลือก (รองรับทั้งเลข index ?chart=1 หรือชื่อผัง)
+            let activeChartIndex = 0;
+            if (chartParam !== null && airportCharts.length > 0) {
+                const parsedIdx = Number(chartParam);
+                if (!Number.isNaN(parsedIdx) && parsedIdx >= 0 && parsedIdx < airportCharts.length) {
+                    activeChartIndex = parsedIdx;
+                } else {
+                    const byNameIdx = airportCharts.findIndex(
+                        (c) => c.name.toLowerCase() === chartParam.trim().toLowerCase()
+                    );
+                    if (byNameIdx !== -1) activeChartIndex = byNameIdx;
+                }
+            }
+
+            const viewerIata = document.getElementById("viewerIata");
+            const viewerTitle = document.getElementById("viewerTitle");
+            const viewerSubtitle = document.getElementById("viewerSubtitle");
+            const viewerImage = document.getElementById("viewerImage");
+            const viewerErrorState = document.getElementById("viewerErrorState");
+            const backBtn = document.getElementById("backToDirectoryBtn");
+
+            const viewerTaxiDropdown = document.getElementById("viewerTaxiDropdown");
+            const viewerTaxiSelectBtn = document.getElementById("viewerTaxiSelectBtn");
+            const viewerCurrentTaxiName = document.getElementById("viewerCurrentTaxiName");
+            const viewerTaxiMenu = document.getElementById("viewerTaxiMenu");
+
+            const viewerStage = document.getElementById("viewerStage");
+            const zoomLevelText = document.getElementById("zoomLevelText");
+            const zoomInBtn = document.getElementById("zoomInBtn");
+            const zoomOutBtn = document.getElementById("zoomOutBtn");
+            const zoomResetBtn = document.getElementById("zoomResetBtn");
+            const rotateLeftBtn = document.getElementById("rotateLeftBtn");
+            const rotateRightBtn = document.getElementById("rotateRightBtn");
+            const rotationSlider = document.getElementById("rotationSlider");
+            const rotationDegBtn = document.getElementById("rotationDegBtn");
+
+            let baseW = 0;
+            let baseH = 0;
+            let currentScale = 1, targetScale = 1;
+            let currentX = 0, targetX = 0;
+            let currentY = 0, targetY = 0;
+            let currentRotation = 0, targetRotation = 0;
+
+            let isDragging = false;
+            let isSlidingRotation = false;
+            let startX = 0;
+            let startY = 0;
+            let initialPinchDistance = null;
+            let initialPinchScale = 1;
+            let rafId = null;
+
+            const MIN_SCALE = 1;
+            const MAX_SCALE = 6;
+            const clamp = (val, min, max) => Math.min(max, Math.max(min, val));
+
+            function closeTaxiDropdown() {
+                viewerTaxiDropdown.classList.remove("is-open");
+                viewerTaxiSelectBtn.setAttribute("aria-expanded", "false");
+            }
+
+            function toggleTaxiDropdown(e) {
+                e.stopPropagation();
+                const willOpen = !viewerTaxiDropdown.classList.contains("is-open");
+                viewerTaxiDropdown.classList.toggle("is-open", willOpen);
+                viewerTaxiSelectBtn.setAttribute("aria-expanded", String(willOpen));
+            }
+
+            viewerTaxiSelectBtn.addEventListener("click", toggleTaxiDropdown);
+            document.addEventListener("click", (e) => {
+                if (!viewerTaxiDropdown.contains(e.target)) {
+                    closeTaxiDropdown();
+                }
+            });
+
+            function normalizeDegrees(deg) {
+                let d = Math.round(deg) % 360;
+                if (d > 180) d -= 360;
+                if (d < -180) d += 360;
+                if (Object.is(d, -0)) d = 0;
+                return d;
+            }
+
+            function syncRotationUI(deg) {
+                const norm = normalizeDegrees(deg);
+                rotationSlider.value = norm;
+                rotationDegBtn.textContent = `${norm}°`;
+            }
+
+            function updateBaseDimensions() {
+                const stageRect = viewerStage.getBoundingClientRect();
+                const maxW = stageRect.width * 0.94;
+                const maxH = stageRect.height * 0.92;
+                const natW = viewerImage.naturalWidth || maxW;
+                const natH = viewerImage.naturalHeight || maxH;
+
+                const rad = (targetRotation * Math.PI) / 180;
+                const absCos = Math.abs(Math.cos(rad));
+                const absSin = Math.abs(Math.sin(rad));
+
+                const effectiveNatW = natW * absCos + natH * absSin;
+                const effectiveNatH = natW * absSin + natH * absCos;
+
+                const fitRatio = Math.min(maxW / effectiveNatW, maxH / effectiveNatH);
+                baseW = natW * fitRatio;
+                baseH = natH * fitRatio;
+            }
+
+            function clampPosition(x, y, scaleVal, rotDeg = targetRotation) {
+                if (scaleVal <= 1 || !baseW || !baseH) return { x: 0, y: 0 };
+
+                const stageRect = viewerStage.getBoundingClientRect();
+                const rad = (rotDeg * Math.PI) / 180;
+                const absCos = Math.abs(Math.cos(rad));
+                const absSin = Math.abs(Math.sin(rad));
+
+                const visualW = (baseW * absCos + baseH * absSin) * scaleVal;
+                const visualH = (baseW * absSin + baseH * absCos) * scaleVal;
+
+                const maxX = Math.max(0, (visualW - stageRect.width) / 2);
+                const maxY = Math.max(0, (visualH - stageRect.height) / 2);
+
+                return {
+                    x: clamp(x, -maxX, maxX),
+                    y: clamp(y, -maxY, maxY)
+                };
+            }
+
+            function applyImageGeometry() {
+                if (!baseW || !baseH) return;
+
+                const drawW = Math.round(baseW * currentScale);
+                const drawH = Math.round(baseH * currentScale);
+                const drawX = Math.round(currentX);
+                const drawY = Math.round(currentY);
+                const rot = currentRotation === targetRotation ? targetRotation : Number(currentRotation.toFixed(2));
+
+                viewerImage.style.width = `${drawW}px`;
+                viewerImage.style.height = `${drawH}px`;
+                viewerImage.style.transform = `translate3d(${drawX}px, ${drawY}px, 0) rotate(${rot}deg)`;
+                zoomLevelText.textContent = `${Math.round(targetScale * 100)}%`;
+            }
+
+            function renderViewerFrame() {
+                if (isDragging || isSlidingRotation) {
+                    currentScale = targetScale;
+                    currentX = targetX;
+                    currentY = targetY;
+                    currentRotation = targetRotation;
+                } else {
+                    const lerp = 0.22;
+                    currentScale += (targetScale - currentScale) * lerp;
+                    currentX += (targetX - currentX) * lerp;
+                    currentY += (targetY - currentY) * lerp;
+                    currentRotation += (targetRotation - currentRotation) * lerp;
+
+                    if (Math.abs(targetScale - currentScale) < 0.001) currentScale = targetScale;
+                    if (Math.abs(targetX - currentX) < 0.05) currentX = targetX;
+                    if (Math.abs(targetY - currentY) < 0.05) currentY = targetY;
+                    if (Math.abs(targetRotation - currentRotation) < 0.05) currentRotation = targetRotation;
+                }
+
+                if (Math.abs(currentScale - 1) < 0.001 && targetScale === 1) {
+                    currentScale = 1;
+                    currentX = 0;
+                    currentY = 0;
+                    viewerStage.classList.remove("is-zoomed");
+                } else if (targetScale > 1) {
+                    viewerStage.classList.add("is-zoomed");
+                }
+
+                applyImageGeometry();
+
+                const isSettled =
+                    !isDragging &&
+                    !isSlidingRotation &&
+                    currentScale === targetScale &&
+                    currentX === targetX &&
+                    currentY === targetY &&
+                    currentRotation === targetRotation;
+
+                if (!isSettled) {
+                    rafId = requestAnimationFrame(renderViewerFrame);
+                } else {
+                    rafId = null;
+                }
+            }
+
+            function scheduleRender() {
+                if (!rafId) {
+                    rafId = requestAnimationFrame(renderViewerFrame);
+                }
+            }
+
+            function setZoom(newScale, centerX = null, centerY = null) {
+                const nextScale = clamp(newScale, MIN_SCALE, MAX_SCALE);
+                if (nextScale === targetScale) return;
+
+                let nextX = targetX;
+                let nextY = targetY;
+
+                if (nextScale <= 1) {
+                    nextX = 0;
+                    nextY = 0;
+                } else if (centerX !== null && centerY !== null) {
+                    const rect = viewerStage.getBoundingClientRect();
+                    const offsetX = centerX - (rect.left + rect.width / 2);
+                    const offsetY = centerY - (rect.top + rect.height / 2);
+                    const ratio = nextScale / targetScale;
+
+                    nextX = offsetX - (offsetX - targetX) * ratio;
+                    nextY = offsetY - (offsetY - targetY) * ratio;
+                }
+
+                const clamped = clampPosition(nextX, nextY, nextScale, targetRotation);
+                targetScale = nextScale;
+                targetX = clamped.x;
+                targetY = clamped.y;
+
+                scheduleRender();
+            }
+
+            function rotateBy(deltaDeg) {
+                targetRotation += deltaDeg;
+                syncRotationUI(targetRotation);
+                updateBaseDimensions();
+                const clamped = clampPosition(targetX, targetY, targetScale, targetRotation);
+                targetX = clamped.x;
+                targetY = clamped.y;
+                scheduleRender();
+            }
+
+            function setExactRotation(deg, immediate = false) {
+                const norm = normalizeDegrees(deg);
+                if (immediate) {
+                    currentRotation = norm;
+                }
+                targetRotation = norm;
+                syncRotationUI(norm);
+                updateBaseDimensions();
+                const clamped = clampPosition(targetX, targetY, targetScale, targetRotation);
+                targetX = clamped.x;
+                targetY = clamped.y;
+                scheduleRender();
+            }
+
+            function resetRotationOnly() {
+                const nearestZero = Math.round(targetRotation / 360) * 360;
+                targetRotation = nearestZero;
+                syncRotationUI(0);
+                updateBaseDimensions();
+                const clamped = clampPosition(targetX, targetY, targetScale, targetRotation);
+                targetX = clamped.x;
+                targetY = clamped.y;
+                scheduleRender();
+            }
+
+            function resetView() {
+                targetScale = 1;
+                targetX = 0;
+                targetY = 0;
+                targetRotation = Math.round(targetRotation / 360) * 360;
+                syncRotationUI(0);
+                updateBaseDimensions();
+                scheduleRender();
+            }
+
+            function loadChartByIndex(index, updateHistory = true) {
+                if (index < 0 || index >= airportCharts.length) return;
+                activeChartIndex = index;
+                const activeChart = airportCharts[activeChartIndex];
+                const hasMultiple = airportCharts.length > 1;
+
+                const displayIata = iata || "CHART";
+                const displayName = name || `${displayIata} Airport Chart`;
+                const displayLocation = location || "WoA Airport Chart";
+
+                viewerIata.textContent = displayIata;
+                viewerTitle.textContent = displayName;
+                viewerSubtitle.textContent = hasMultiple
+                    ? `${displayLocation} • ${activeChart.name}`
+                    : displayLocation;
+
+                document.title = hasMultiple
+                    ? `${displayIata} (${activeChart.name}) - ${displayName} | NAJ - WoA Charts`
+                    : `${displayIata} - ${displayName} | NAJ - WoA Charts`;
+
+                // เก็บชื่อผังปัจจุบันไว้บน data attribute สำหรับเมนูคลิกขวา (Download Chart)
+                viewerImage.dataset.chartName = hasMultiple ? activeChart.name : "";
+
+                if (hasMultiple) {
+                    viewerCurrentTaxiName.textContent = activeChart.name;
+                    viewerTaxiMenu.querySelectorAll(".viewer-taxi-option").forEach((optBtn, idx) => {
+                        const isSelected = idx === activeChartIndex;
+                        optBtn.classList.toggle("is-selected", isSelected);
+                        optBtn.setAttribute("aria-selected", String(isSelected));
+                    });
+
+                    if (updateHistory && iata) {
+                        const nextUrl = `viewer.html?iata=${encodeURIComponent(iata)}&chart=${activeChartIndex}`;
+                        window.history.replaceState(null, "", nextUrl);
+                    }
+                }
+
+                // รีเซ็ตสถานะซูม/หมุนและโหลดภาพใหม่
+                viewerErrorState.style.display = "none";
+                viewerImage.style.display = "block";
+                targetScale = 1;
+                currentScale = 1;
+                targetX = 0;
+                currentX = 0;
+                targetY = 0;
+                currentY = 0;
+                targetRotation = 0;
+                currentRotation = 0;
+                syncRotationUI(0);
+
+                viewerImage.onload = () => {
+                    updateBaseDimensions();
+                    if (!document.body.classList.contains("no-animations")) {
+                        currentScale = 0.965;
+                    }
+                    applyImageGeometry();
+                    requestAnimationFrame(() => {
+                        setTimeout(() => {
+                            viewerImage.classList.add("is-loaded");
+                            scheduleRender();
+                        }, 70);
+                    });
+                };
+
+                viewerImage.onerror = () => {
+                    viewerImage.style.display = "none";
+                    viewerErrorState.style.display = "flex";
+                };
+
+                viewerImage.src = activeChart.file;
+                viewerImage.alt = `${displayIata} - ${displayName} (${activeChart.name})`;
+            }
+
+            if (airportCharts.length === 0) {
+                document.title = "Chart Not Found - NAJ - WoA Charts";
+                viewerIata.textContent = "N/A";
+                viewerTitle.textContent = "Airport Chart Not Found";
+                viewerSubtitle.textContent = "Please select an airport from the directory";
+                viewerImage.style.display = "none";
+                viewerErrorState.style.display = "flex";
+            } else {
+                // สร้างเมนู Dropdown เลือกผัง Taxiing ใน Viewer ถ้ามีมากกว่า 1 ผัง
+                if (airportCharts.length > 1) {
+                    viewerTaxiDropdown.style.display = "inline-flex";
+                    viewerTaxiMenu.innerHTML = "";
+
+                    const headerDiv = document.createElement("div");
+                    headerDiv.className = "viewer-taxi-menu-header";
+                    headerDiv.textContent = `Taxiing Layouts (${airportCharts.length})`;
+                    viewerTaxiMenu.appendChild(headerDiv);
+
+                    airportCharts.forEach((chartItem, idx) => {
+                        const optionBtn = document.createElement("button");
+                        optionBtn.type = "button";
+                        optionBtn.className = "viewer-taxi-option";
+                        optionBtn.setAttribute("role", "option");
+
+                        const leftGroup = document.createElement("span");
+                        leftGroup.className = "viewer-taxi-option-left";
+
+                        const numBadge = document.createElement("span");
+                        numBadge.className = "viewer-taxi-option-num";
+                        numBadge.textContent = `${idx + 1}`;
+
+                        const textSpan = document.createElement("span");
+                        textSpan.className = "viewer-taxi-option-text";
+                        textSpan.textContent = chartItem.name;
+
+                        leftGroup.append(numBadge, textSpan);
+
+                        const checkSpan = document.createElement("span");
+                        checkSpan.className = "viewer-taxi-option-check";
+                        checkSpan.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+
+                        optionBtn.append(leftGroup, checkSpan);
+
+                        optionBtn.addEventListener("click", (e) => {
+                            e.stopPropagation();
+                            closeTaxiDropdown();
+                            if (idx !== activeChartIndex) {
+                                loadChartByIndex(idx, true);
+                            }
+                        });
+
+                        viewerTaxiMenu.appendChild(optionBtn);
+                    });
+                }
+
+                loadChartByIndex(activeChartIndex, false);
+            }
+
+            const goBackToDirectory = () => {
+                if (typeof navigateTo === "function") {
+                    navigateTo("index.html");
+                } else {
+                    window.location.href = "index.html";
+                }
+            };
+
+            backBtn.addEventListener("click", (e) => {
+                if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+                e.preventDefault();
+                goBackToDirectory();
+            });
+
+            rotateLeftBtn.addEventListener("click", () => rotateBy(-90));
+            rotateRightBtn.addEventListener("click", () => rotateBy(90));
+            rotationDegBtn.addEventListener("click", resetRotationOnly);
+
+            rotationSlider.addEventListener("input", (e) => {
+                isSlidingRotation = true;
+                setExactRotation(Number(e.target.value), true);
+            });
+
+            rotationSlider.addEventListener("change", () => {
+                isSlidingRotation = false;
+            });
+
+            zoomInBtn.addEventListener("click", () => setZoom(targetScale + 0.5));
+            zoomOutBtn.addEventListener("click", () => setZoom(targetScale - 0.5));
+            zoomResetBtn.addEventListener("click", resetView);
+
+            viewerStage.addEventListener("wheel", (e) => {
+                e.preventDefault();
+                if (e.shiftKey) {
+                    const rotStep = e.deltaY < 0 ? 1 : -1;
+                    rotateBy(rotStep);
+                } else {
+                    const zoomStep = e.deltaY < 0 ? 0.4 : -0.4;
+                    setZoom(targetScale + zoomStep, e.clientX, e.clientY);
+                }
+            }, { passive: false });
+
+            viewerStage.addEventListener("dblclick", (e) => {
+                if (targetScale > 1) {
+                    targetScale = 1;
+                    targetX = 0;
+                    targetY = 0;
+                    scheduleRender();
+                } else {
+                    setZoom(2.5, e.clientX, e.clientY);
+                }
+            });
+
+            viewerStage.addEventListener("mousedown", (e) => {
+                if (targetScale <= 1) return;
+                e.preventDefault();
+                currentScale = targetScale;
+                currentX = targetX;
+                currentY = targetY;
+
+                isDragging = true;
+                startX = e.clientX - currentX;
+                startY = e.clientY - currentY;
+                viewerStage.classList.add("is-dragging");
+            });
+
+            window.addEventListener("mousemove", (e) => {
+                if (!isDragging) return;
+                const clamped = clampPosition(e.clientX - startX, e.clientY - startY, targetScale, targetRotation);
+                targetX = clamped.x;
+                targetY = clamped.y;
+                scheduleRender();
+            });
+
+            window.addEventListener("mouseup", () => {
+                if (!isDragging) return;
+                isDragging = false;
+                viewerStage.classList.remove("is-dragging");
+            });
+
+            viewerStage.addEventListener("touchstart", (e) => {
+                if (e.touches.length === 1 && targetScale > 1) {
+                    currentScale = targetScale;
+                    currentX = targetX;
+                    currentY = targetY;
+
+                    isDragging = true;
+                    startX = e.touches[0].clientX - currentX;
+                    startY = e.touches[0].clientY - currentY;
+                } else if (e.touches.length === 2) {
+                    isDragging = false;
+                    initialPinchDistance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    initialPinchScale = targetScale;
+                }
+            }, { passive: true });
+
+            viewerStage.addEventListener("touchmove", (e) => {
+                if (e.touches.length === 1 && isDragging && targetScale > 1) {
+                    e.preventDefault();
+                    const clamped = clampPosition(
+                        e.touches[0].clientX - startX,
+                        e.touches[0].clientY - startY,
+                        targetScale,
+                        targetRotation
+                    );
+                    targetX = clamped.x;
+                    targetY = clamped.y;
+                    scheduleRender();
+                } else if (e.touches.length === 2 && initialPinchDistance) {
+                    e.preventDefault();
+                    const currentDistance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    const pinchRatio = currentDistance / initialPinchDistance;
+                    setZoom(initialPinchScale * pinchRatio);
+                }
+            }, { passive: false });
+
+            viewerStage.addEventListener("touchend", () => {
+                isDragging = false;
+                initialPinchDistance = null;
+            });
+
+            window.addEventListener("resize", () => {
+                updateBaseDimensions();
+                const clamped = clampPosition(targetX, targetY, targetScale, targetRotation);
+                targetX = clamped.x;
+                targetY = clamped.y;
+                applyImageGeometry();
+            });
+
+            document.addEventListener("keydown", (e) => {
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                if (document.activeElement === rotationSlider && (e.key === "ArrowLeft" || e.key === "ArrowRight")) return;
+
+                const key = e.key.toLowerCase();
+                if (e.key === "Escape") {
+                    if (viewerTaxiDropdown.classList.contains("is-open")) {
+                        closeTaxiDropdown();
+                        return;
+                    }
+                    goBackToDirectory();
+                }
+                if (e.key === "+" || e.key === "=") setZoom(targetScale + 0.5);
+                if (e.key === "-") setZoom(targetScale - 0.5);
+                if (e.key === "0") resetView();
+                if (key === "r") rotateBy(e.shiftKey ? -90 : 90);
+                if (key === "e") rotateBy(e.shiftKey ? 1 : 5);
+                if (key === "q") rotateBy(e.shiftKey ? -1 : -5);
+            });
+        });
+    </script>
+</body>
+</html>

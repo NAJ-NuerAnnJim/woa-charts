@@ -1,0 +1,107 @@
+[
+  {
+    "iata": "BKK",
+    "name": "Suvarnabhumi Airport",
+    "location": "Bangkok, Thailand",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/BKK.png"
+  },
+  {
+    "iata": "BRI",
+    "name": "Bari Karol Wojtyła Airport",
+    "location": "Bari, Italy",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/BRI.png"
+  },
+  {
+    "iata": "GRU",
+    "name": "São Paulo/Guarulhos International Airport",
+    "location": "São Paulo, Brazil",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/GRU.png"
+  },
+  {
+    "iata": "IAD",
+    "name": "Washington Dulles International Airport",
+    "location": "Washington, D.C., USA",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/IAD.png"
+  },
+  {
+    "iata": "INN",
+    "name": "Innsbruck Airport",
+    "location": "Innsbruck, Austria",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/INN.png"
+  },
+  {
+    "iata": "LEJ",
+    "name": "Leipzig/Halle Airport",
+    "location": "Leipzig, Germany",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/LEJ.png"
+  },
+  {
+    "iata": "LHR",
+    "name": "London Heathrow Airport",
+    "location": "London, United Kingdom",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/LHR.png"
+  },
+  {
+    "iata": "MCT",
+    "name": "Muscat International Airport",
+    "location": "Muscat, Oman",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/MCT.png"
+  },
+  {
+    "iata": "MSY",
+    "name": "Louis Armstrong New Orleans International Airport",
+    "location": "New Orleans, USA",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/MSY.png"
+  },
+  {
+    "iata": "NGO",
+    "name": "Chubu Centrair International Airport",
+    "location": "Nagoya, Japan",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/NGO.png"
+  },
+  {
+    "iata": "PRG",
+    "name": "Václav Havel Airport Prague",
+    "location": "Prague, Czech Republic",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/PRG.png"
+  },
+  {
+    "iata": "SAN",
+    "name": "San Diego International Airport",
+    "location": "San Diego, USA",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/SAN.png"
+  },
+  {
+    "iata": "SCL",
+    "name": "Arturo Merino Benítez International Airport",
+    "location": "Santiago, Chile",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/SCL.jpg"
+  },
+  {
+    "iata": "SXM",
+    "name": "Princess Juliana International Airport",
+    "location": "Philipsburg, Sint Maarten",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/SXM.png"
+  },
+  {
+    "iata": "SYD",
+    "name": "Sydney Kingsford Smith Airport",
+    "location": "Sydney, Australia",
+    "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/SYD.jpg"
+  },
+  {
+    "iata": "ZHR",
+    "name": "Zurich Airport",
+    "location": "Zurich, Switzerland",
+    "charts": [
+      {
+        "name": "Southern Apron Taxiing",
+        "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/ZHR_southern.jpg"
+      },
+      {
+        "name": "Northern Apron Taxiing",
+        "file": "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/ZHR_northern.jpg"
+      }
+    ]
+  }
+]

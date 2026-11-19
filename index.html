@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAJ - WoA Charts</title>
+    <link rel="icon" type="image/png" href="web-data/picture/Logoicon1.png">
+    <script>
+        if (localStorage.getItem("app_theme") === "dark") {
+            document.documentElement.classList.add("dark-mode");
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ==========================================
+           HOME PAGE — BORDERLESS FULL-BLEED PREVIEW
+           ========================================== */
+        .home-banner-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .home-banner-actions .primary-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+
+        /* พื้นที่แสดงภาพแบบโดดๆ ไม่มีเส้นกรอบล้อมรอบ */
+        .preview-stage {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .chart-carousel-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 24px;
+            overflow: hidden;
+            border: none;
+            background: #0f172a;
+            box-shadow: 0 20px 46px rgba(15, 23, 42, 0.16), 0 4px 14px rgba(15, 23, 42, 0.08);
+            user-select: none;
+            transform: translateZ(0);
+        }
+
+        .dark-mode .chart-carousel-box {
+            box-shadow: 0 24px 54px rgba(0, 0, 0, 0.48), 0 6px 18px rgba(0, 0, 0, 0.3);
+        }
+
+        .chart-carousel-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.48s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .no-animations .chart-carousel-track {
+            transition: none;
+        }
+
+        .chart-carousel-slide {
+            min-width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .chart-carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+            pointer-events: none;
+            transition: transform 0.5s ease;
+        }
+
+        .chart-carousel-box:hover .chart-carousel-slide img {
+            transform: scale(1.015);
+        }
+
+        .no-animations .chart-carousel-slide img {
+            transition: none;
+        }
+
+        /* ไล่เฉดมืดบางๆ เฉพาะขอบล่างของภาพเพื่อให้ข้อความและปุ่มอ่านง่ายโดยไม่มีกรอบ */
+        .preview-overlay-bar {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 44px 24px 20px;
+            background: linear-gradient(to top, rgba(9, 13, 24, 0.84) 0%, rgba(9, 13, 24, 0.45) 55%, rgba(9, 13, 24, 0) 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 16px;
+            flex-wrap: wrap;
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        .preview-overlay-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            color: #ffffff;
+        }
+
+        .preview-overlay-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preview-overlay-iata {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            padding: 4px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(10px);
+            color: #ffffff;
+        }
+
+        .preview-overlay-name {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+        }
+
+        .preview-overlay-sub {
+            font-size: 0.84rem;
+            color: rgba(255, 255, 255, 0.82);
+        }
+
+        .preview-overlay-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: auto;
+        }
+
+        .preview-overlay-counter {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.92);
+        }
+
+        .preview-overlay-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 15px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.94);
+            color: #0f172a;
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .preview-overlay-btn:hover {
+            background: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        /* ปุ่มเลื่อนซ้าย-ขวาแบบไร้เส้นกรอบ */
+        .carousel-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(15, 23, 42, 0.48);
+            backdrop-filter: blur(10px);
+            color: #ffffff;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            z-index: 5;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .carousel-nav-btn:hover {
+            background: rgba(15, 23, 42, 0.78);
+            transform: translateY(-50%) scale(1.06);
+        }
+
+        .carousel-nav-btn.prev {
+            left: 16px;
+        }
+
+        .carousel-nav-btn.next {
+            right: 16px;
+        }
+
+        /* เส้น Progress บางๆ ติดขอบล่างสุดของรูป */
+        .carousel-progress {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.16);
+            z-index: 6;
+        }
+
+        .carousel-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #60a5fa;
+            transition: width 0.1s linear;
+        }
+
+        /* จุดบอกตำแหน่งสไลด์แบบมินิมอลด้านล่างภาพ */
+        .carousel-controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 6px;
+        }
+
+        .carousel-dots {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            border: none;
+            padding: 0;
+            background: rgba(148, 163, 184, 0.45);
+            cursor: pointer;
+            transition: width 0.25s ease, background-color 0.25s ease;
+        }
+
+        .carousel-dot.active {
+            width: 28px;
+            background: #2563eb;
+        }
+
+        .dark-mode .carousel-dot.active {
+            background: #60a5fa;
+        }
+
+        .preview-caption-hint {
+            font-size: 0.8rem;
+            opacity: 0.65;
+        }
+
+        @media (max-width: 640px) {
+            .chart-carousel-box {
+                aspect-ratio: 4 / 3;
+                border-radius: 18px;
+            }
+            .preview-overlay-bar {
+                padding: 36px 16px 16px;
+            }
+            .preview-overlay-name {
+                font-size: 1.02rem;
+            }
+            .carousel-nav-btn {
+                width: 36px;
+                height: 36px;
+            }
+            .carousel-nav-btn.prev {
+                left: 10px;
+            }
+            .carousel-nav-btn.next {
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ==========================================
+         HEADER & NAVIGATION + CENTERED TOPBAR SEARCH
+         ========================================== -->
+    <header>
+        <div class="topbar">
+            <div class="topbar-left">
+                <a href="index.html" class="logo">
+                    <img src="web-data/picture/Logoicon1.png" alt="Logo">
+                    <span id="logoText" class="logo-text">NAJ - WoA Charts</span>
+                </a>
+            </div>
+
+            <div class="topbar-center">
+                <div class="topbar-search" id="topbarSearchBox">
+                    <span class="search-icon" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </span>
+                    <input
+                        type="text"
+                        id="topbarSearchInput"
+                        placeholder="Search airports, pages, settings..."
+                        autocomplete="off"
+                        aria-label="Search site"
+                        aria-expanded="false"
+                        aria-controls="searchDropdown"
+                    >
+                    <button type="button" id="clearSearchBtn" class="clear-search-btn" title="Clear search" aria-label="Clear search">&times;</button>
+
+                    <!-- Dropdown แสดงผลลัพธ์การค้นหา (จัดการโดย search.js) -->
+                    <div class="search-dropdown" id="searchDropdown" role="listbox" aria-label="Search suggestions"></div>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <div class="menu">
+                    <div class="hamburger" id="hamburgerMenu" role="button" tabindex="0" aria-label="Toggle menu" aria-expanded="false">
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-card">
+            <h2>Menu</h2>
+            <button onclick="navigateTo('charts.html')" style="--menu-index: 1;">WoA Charts</button>
+            <button onclick="navigateTo('credits.html')" style="--menu-index: 2;">Credits</button>
+            <button onclick="navigateTo('settings.html')" class="settings-btn" title="Settings" aria-label="Settings" style="--menu-index: 3;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ==========================================
+         MAIN CONTENT (INTRO BANNER + BORDERLESS IMAGE PREVIEW)
+         ========================================== -->
+    <main class="NAJ-container">
+        <div class="charts-wrapper">
+            <!-- Banner หัวข้อหลัก -->
+            <section class="charts-intro-banner reveal-section" style="--stagger-delay: 0ms;">
+                <div class="intro-text">
+                    <h1>NAJ - WoA Charts</h1>
+                    <p>
+                        Standardized airport ground charts, taxiway layouts, and stand reference diagrams for World of Airports.
+                        Open the full directory or search directly by IATA code (e.g., <strong>BKK</strong>, <strong>INN</strong>, <strong>PRG</strong>) above.
+                    </p>
+                    <div class="home-banner-actions">
+                        <a href="charts.html" class="primary-btn">
+                            <span>Open Charts Directory</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="charts-count-badge" id="homeChartsCountBadge">5 Charts</div>
+            </section>
+
+            <!-- ภาพ Preview โดดๆ เต็มกรอบโค้งมน ไม่มีเส้นกรอบ -->
+            <section class="preview-stage reveal-section" style="--stagger-delay: 85ms;" aria-label="Airport Chart Preview">
+                <div class="chart-carousel-box" id="chartCarouselBox">
+                    <button type="button" class="carousel-nav-btn prev" id="chartPrevBtn" aria-label="Previous chart">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+
+                    <div class="chart-carousel-track" id="chartCarouselTrack"></div>
+
+                    <button type="button" class="carousel-nav-btn next" id="chartNextBtn" aria-label="Next chart">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+
+                    <!-- ข้อมูลสนามบินซ้อนบนขอบล่างภาพ -->
+                    <div class="preview-overlay-bar">
+                        <div class="preview-overlay-info">
+                            <div class="preview-overlay-title-row">
+                                <span class="preview-overlay-iata" id="carouselIataBadge">INN</span>
+                                <h2 class="preview-overlay-name" id="carouselAirportName">Innsbruck Airport</h2>
+                            </div>
+                            <span class="preview-overlay-sub" id="carouselAirportSub">Innsbruck, Austria • RWY 08 / 26</span>
+                        </div>
+
+                        <div class="preview-overlay-actions">
+                            <span class="preview-overlay-counter" id="carouselCounterPill">01 / 05</span>
+                            <a href="viewer.html?iata=INN" id="carouselViewerLink" class="preview-overlay-btn">
+                                <span>Inspect Chart</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <polyline points="9 21 3 21 3 15"></polyline>
+                                    <line x1="21" y1="3" x2="14" y2="10"></line>
+                                    <line x1="3" y1="21" x2="10" y2="14"></line>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="carousel-progress">
+                        <div class="carousel-progress-fill" id="carouselProgressFill"></div>
+                    </div>
+                </div>
+
+                <div class="carousel-controls-row">
+                    <div class="carousel-dots" id="carouselDots"></div>
+                    <span class="preview-caption-hint">Click image to open full zoom viewer</span>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- ==========================================
+         FOOTER
+         ========================================== -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a href="index.html" class="footer-logo">
+                    <img src="web-data/picture/Logoicon1.png" alt="Logo">
+                    <span>NAJ</span>
+                </a>
+                <p class="footer-desc">WoA charts hub. You can find the latest charts and updates here.</p>
+            </div>
+
+            <div class="footer-links-group">
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="charts.html">Charts</a></li>
+                        <li><a href="credits.html">Credits</a></li>
+                        <li><a href="settings.html">Settings</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="https://github.com/EdwardMarico" target="_blank">GitHub</a></li>
+                        <li><a href="mailto:thiraphat.yt.ac@gmail.com">Email Us</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Credits</h4>
+                    <p>Designed &amp; Developed by <strong>EdwardMarico</strong></p>
+                    <p class="copyright">&copy; 2026 NAJ. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="context-menu.js"></script>
+    <script src="search.js"></script>
+    <script>
+        // ข้อมูลสนามบินตัวอย่าง (ใช้เป็น Fallback เมื่อเปิดไฟล์โดยไม่ได้รันผ่าน Web Server)
+        const defaultFeaturedCharts = [
+            {
+                iata: "INN",
+                name: "Innsbruck Airport",
+                location: "Innsbruck, Austria",
+                rwy: "RWY 08 / 26",
+                file: "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/INN.png"
+            },
+            {
+                iata: "BRI",
+                name: "Bari Karol Wojtyła Airport",
+                location: "Bari, Italy",
+                rwy: "RWY 07 / 25",
+                file: "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/BRI.png"
+            },
+            {
+                iata: "PRG",
+                name: "Václav Havel Airport Prague",
+                location: "Prague, Czech Republic",
+                rwy: "RWY 06/24 • 12/30",
+                file: "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/PRG.png"
+            },
+            {
+                iata: "IAD",
+                name: "Washington Dulles Intl",
+                location: "Dulles, Virginia, USA",
+                rwy: "RWY 01L/19R • 01C/19C • 01R/19L • 12/30",
+                file: "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/IAD.png"
+            },
+            {
+                iata: "BKK",
+                name: "Suvarnabhumi Airport",
+                location: "Bangkok, Thailand",
+                rwy: "RWY 01L/19R • 01R/19L • 02R/20L",
+                file: "https://res.cloudinary.com/r7rd0eyy/image/upload/v1795116016/BKK.png"
+            }
+        ];
+
+        // ภาพจำลองเต็มกรอบ (ทำงานเฉพาะกรณีที่ยังไม่พบไฟล์รูปจริงตาม path)
+        function buildFallbackSvg(chart) {
+            const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+                    <rect width="1280" height="720" fill="#1e293b"/>
+                    <g stroke="#334155" stroke-width="1">
+                        <line x1="0" y1="120" x2="1280" y2="120"/><line x1="0" y1="240" x2="1280" y2="240"/>
+                        <line x1="0" y1="360" x2="1280" y2="360"/><line x1="0" y1="480" x2="1280" y2="480"/>
+                        <line x1="0" y1="600" x2="1280" y2="600"/>
+                        <line x1="256" y1="0" x2="256" y2="720"/><line x1="512" y1="0" x2="512" y2="720"/>
+                        <line x1="768" y1="0" x2="768" y2="720"/><line x1="1024" y1="0" x2="1024" y2="720"/>
+                    </g>
+                    <rect x="240" y="340" width="800" height="28" rx="4" fill="#0f172a"/>
+                    <line x1="265" y1="354" x2="1015" y2="354" stroke="#f8fafc" stroke-width="3" stroke-dasharray="22 16"/>
+                    <path d="M 330 340 L 330 265 L 950 265 L 950 340" fill="none" stroke="#94a3b8" stroke-width="8"/>
+                    <rect x="470" y="185" width="340" height="54" rx="8" fill="#475569"/>
+                    <text x="640" y="218" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#f8fafc">TERMINAL &amp; APRON</text>
+                    <text x="640" y="455" text-anchor="middle" font-family="monospace" font-size="30" font-weight="bold" fill="#f8fafc">${chart.iata} — ${chart.name}</text>
+                    <text x="640" y="492" text-anchor="middle" font-family="monospace" font-size="16" fill="#94a3b8">${chart.rwy || "AERODROME DIAGRAM"}</text>
+                </svg>`;
+            return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            // 1. ซิงค์ธีมและแอนิเมชันจากหน้า Settings
+            const isDark = (localStorage.getItem("app_theme") || "light") === "dark";
+            const isAnim = localStorage.getItem("setting_enableAnimation") !== "false";
+
+            document.documentElement.classList.toggle("dark-mode", isDark);
+            document.body.classList.toggle("dark-mode", isDark);
+            document.body.classList.toggle("no-animations", !isAnim);
+
+            const revealSections = document.querySelectorAll(".reveal-section");
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    revealSections.forEach((sec) => sec.classList.add("is-revealed"));
+                }, 90);
+            });
+
+            // 2. แปลงข้อมูลสนามบินให้รองรับทั้ง "file" เดี่ยว และ "charts" หลายแบบ
+            function normalizeAirportCharts(airport) {
+                if (Array.isArray(airport.charts) && airport.charts.length > 0) {
+                    return airport.charts
+                        .filter((c) => c && c.file)
+                        .map((c, idx) => ({
+                            name: (c.name || `Taxi Layout ${idx + 1}`).trim(),
+                            file: String(c.file).trim()
+                        }));
+                }
+                if (airport.file) {
+                    return [{
+                        name: (airport.chartName || "Airport Chart").trim(),
+                        file: String(airport.file).trim()
+                    }];
+                }
+                return [];
+            }
+
+            // โหลดข้อมูลจาก charts-data.json หากมีในโปรเจกต์
+            let allAirports = [];
+            let loadedFromJson = false;
+            try {
+                const res = await fetch("charts-data.json");
+                if (res.ok) {
+                    const parsed = await res.json();
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        allAirports = parsed.map((a) => ({
+                            iata: (a.iata || "").trim().toUpperCase(),
+                            name: (a.name || "").trim(),
+                            location: (a.location || "").trim(),
+                            rwy: a.rwy || "",
+                            charts: normalizeAirportCharts(a)
+                        }));
+                        loadedFromJson = true;
+                    }
+                }
+            } catch (_) {
+                // ใช้ข้อมูลสำรองด้านล่างเมื่อเปิดไฟล์แบบ Local
+            }
+
+            if (!loadedFromJson) {
+                allAirports = defaultFeaturedCharts.map((a) => ({
+                    iata: a.iata,
+                    name: a.name,
+                    location: a.location,
+                    rwy: a.rwy,
+                    charts: [{ name: "Airport Chart", file: a.file }]
+                }));
+            }
+
+            const countBadge = document.getElementById("homeChartsCountBadge");
+            if (countBadge) {
+                countBadge.textContent = loadedFromJson
+                    ? `${allAirports.length} Airports`
+                    : `${allAirports.length} Charts`;
+            }
+
+            // ==========================================
+            // 3. ระบบสไลด์ภาพเต็มกรอบโค้งมน (Borderless Full-Bleed Preview)
+            // ==========================================
+            const carouselSlidesData = allAirports.slice(0, 8).map((a) => ({
+                iata: a.iata,
+                name: a.name,
+                location: a.location,
+                rwy: a.rwy,
+                chartCount: a.charts.length,
+                image: a.charts[0] ? a.charts[0].file : `web-data/charts/${a.iata}.png`
+            }));
+
+            const carouselBox = document.getElementById("chartCarouselBox");
+            const track = document.getElementById("chartCarouselTrack");
+            const prevBtn = document.getElementById("chartPrevBtn");
+            const nextBtn = document.getElementById("chartNextBtn");
+            const dotsContainer = document.getElementById("carouselDots");
+            const progressFill = document.getElementById("carouselProgressFill");
+            const iataBadgeEl = document.getElementById("carouselIataBadge");
+            const airportNameEl = document.getElementById("carouselAirportName");
+            const airportSubEl = document.getElementById("carouselAirportSub");
+            const counterPillEl = document.getElementById("carouselCounterPill");
+            const viewerLinkEl = document.getElementById("carouselViewerLink");
+
+            const AUTO_SLIDE_MS = 4500;
+            let currentIndex = 0;
+            let isPaused = false;
+            let elapsed = 0;
+            let lastTime = null;
+
+            carouselSlidesData.forEach((chart, idx) => {
+                const slide = document.createElement("div");
+                slide.className = "chart-carousel-slide";
+                slide.title = `Open ${chart.iata} — ${chart.name}`;
+
+                const img = document.createElement("img");
+                img.src = chart.image;
+                img.alt = `${chart.iata} - ${chart.name}`;
+                img.onerror = () => {
+                    img.onerror = null;
+                    img.src = buildFallbackSvg(chart);
+                };
+
+                slide.addEventListener("click", (e) => {
+                    if (e.target.closest(".preview-overlay-actions")) return;
+                    const href = `viewer.html?iata=${encodeURIComponent(chart.iata)}`;
+                    if (typeof navigateTo === "function") {
+                        navigateTo(href);
+                    } else {
+                        window.location.href = href;
+                    }
+                });
+
+                slide.appendChild(img);
+                track.appendChild(slide);
+
+                const dot = document.createElement("button");
+                dot.type = "button";
+                dot.className = "carousel-dot" + (idx === 0 ? " active" : "");
+                dot.setAttribute("aria-label", `Show ${chart.iata} chart`);
+                dot.addEventListener("click", () => goToSlide(idx));
+                dotsContainer.appendChild(dot);
+            });
+
+            const dots = Array.from(dotsContainer.querySelectorAll(".carousel-dot"));
+
+            function padTwo(num) {
+                return String(num).padStart(2, "0");
+            }
+
+            function updateCarousel() {
+                track.style.transform = `translateX(-${currentIndex * 100}%)`;
+                dots.forEach((dot, idx) => dot.classList.toggle("active", idx === currentIndex));
+                const current = carouselSlidesData[currentIndex];
+                if (current) {
+                    iataBadgeEl.textContent = current.iata;
+                    airportNameEl.textContent = current.name;
+
+                    const subParts = [];
+                    if (current.location) subParts.push(current.location);
+                    if (current.rwy) subParts.push(current.rwy);
+                    if (current.chartCount > 1) subParts.push(`${current.chartCount} Taxi Layouts`);
+                    airportSubEl.textContent = subParts.join(" • ");
+
+                    counterPillEl.textContent = `${padTwo(currentIndex + 1)} / ${padTwo(carouselSlidesData.length)}`;
+                    viewerLinkEl.href = `viewer.html?iata=${encodeURIComponent(current.iata)}`;
+                }
+            }
+
+            function goToSlide(index) {
+                currentIndex = (index + carouselSlidesData.length) % carouselSlidesData.length;
+                elapsed = 0;
+                progressFill.style.width = "0%";
+                updateCarousel();
+            }
+
+            function nextSlide() {
+                goToSlide(currentIndex + 1);
+            }
+
+            function prevSlide() {
+                goToSlide(currentIndex - 1);
+            }
+
+            prevBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                prevSlide();
+            });
+            nextBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                nextSlide();
+            });
+
+            document.addEventListener("keydown", (e) => {
+                const activeEl = document.activeElement;
+                if (activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.isContentEditable)) return;
+                if (e.key === "ArrowLeft") prevSlide();
+                if (e.key === "ArrowRight") nextSlide();
+            });
+
+            carouselBox.addEventListener("mouseenter", () => { isPaused = true; });
+            carouselBox.addEventListener("mouseleave", () => {
+                isPaused = false;
+                lastTime = performance.now();
+            });
+
+            let touchStartX = 0;
+            carouselBox.addEventListener("touchstart", (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+                isPaused = true;
+            }, { passive: true });
+
+            carouselBox.addEventListener("touchend", (e) => {
+                const diff = touchStartX - e.changedTouches[0].screenX;
+                if (Math.abs(diff) > 40) {
+                    diff > 0 ? nextSlide() : prevSlide();
+                }
+                isPaused = false;
+                lastTime = performance.now();
+            }, { passive: true });
+
+            function tickAutoSlide(now) {
+                if (!lastTime) lastTime = now;
+                const dt = now - lastTime;
+                lastTime = now;
+
+                if (!isPaused && !document.hidden) {
+                    elapsed += dt;
+                    const pct = Math.min((elapsed / AUTO_SLIDE_MS) * 100, 100);
+                    progressFill.style.width = `${pct}%`;
+                    if (elapsed >= AUTO_SLIDE_MS) nextSlide();
+                }
+                requestAnimationFrame(tickAutoSlide);
+            }
+
+            updateCarousel();
+            requestAnimationFrame(tickAutoSlide);
+        });
+    </script>
+</body>
+</html>
