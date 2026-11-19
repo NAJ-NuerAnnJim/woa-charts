@@ -2323,3 +2323,117 @@ body.dark-mode .credits-github-btn:hover {
     background-color: #32323c;
     border-color: rgba(255, 255, 255, 0.28);
 }
+
+/* ==========================================
+   VIEWER PAGE — LIGHT MODE SUPPORT
+   ========================================== */
+body.viewer-page-body:not(.dark-mode) {
+    background-color: #f2f2f5 !important;
+}
+
+body:not(.dark-mode) .chart-viewer-page {
+    background-color: #f2f2f5;
+}
+
+body:not(.dark-mode) .viewer-toolbar {
+    background-color: #ffffff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    color: #111111;
+}
+
+body:not(.dark-mode) .viewer-back-btn,
+body:not(.dark-mode) .viewer-btn {
+    background-color: #f4f4f6;
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #18181c;
+}
+
+body:not(.dark-mode) .viewer-back-btn:hover,
+body:not(.dark-mode) .viewer-btn:hover {
+    background-color: #e4e4e7;
+    border-color: rgba(0, 0, 0, 0.22);
+}
+
+body:not(.dark-mode) .viewer-name-wrap h1,
+body:not(.dark-mode) .viewer-name-wrap h2,
+body:not(.dark-mode) .zoom-level-text {
+    color: #111111;
+}
+
+body:not(.dark-mode) .viewer-name-wrap span,
+body:not(.dark-mode) .viewer-error-state {
+    color: #64748b;
+}
+
+body:not(.dark-mode) .rotation-control-group {
+    background-color: #f4f4f6;
+    border-color: rgba(0, 0, 0, 0.12);
+}
+
+body:not(.dark-mode) .rotation-deg-btn {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #18181c;
+}
+
+body:not(.dark-mode) .viewer-controls > span[aria-hidden="true"] {
+    background: rgba(0, 0, 0, 0.14) !important;
+}
+
+body:not(.dark-mode) .viewer-taxi-select-btn {
+    background-color: rgba(37, 99, 235, 0.09);
+    border-color: rgba(37, 99, 235, 0.28);
+    color: #1d4ed8;
+}
+
+body:not(.dark-mode) .viewer-taxi-select-btn:hover,
+body:not(.dark-mode) .viewer-taxi-dropdown.is-open .viewer-taxi-select-btn {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
+body:not(.dark-mode) .viewer-taxi-menu {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
+}
+
+body:not(.dark-mode) .viewer-taxi-menu-header {
+    color: #64748b;
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+body:not(.dark-mode) .viewer-taxi-option {
+    color: #18181c;
+}
+
+body:not(.dark-mode) .viewer-taxi-option:hover {
+    background-color: rgba(37, 99, 235, 0.08);
+    color: #1d4ed8;
+}
+
+body:not(.dark-mode) .viewer-taxi-option.is-selected {
+    background-color: rgba(37, 99, 235, 0.14);
+    color: #1d4ed8;
+}
+
+body:not(.dark-mode) .viewer-taxi-option-num {
+    background-color: rgba(37, 99, 235, 0.12);
+    color: #1d4ed8;
+}
+
+body:not(.dark-mode) .viewer-taxi-option.is-selected .viewer-taxi-option-num {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+body:not(.dark-mode) .viewer-stage img {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+}
+
+body:not(.dark-mode) .viewer-hint-bar {
+    background-color: #ffffff;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    color: #64748b;
+}

@@ -534,7 +534,7 @@
                 label: "Back to Directory",
                 icon: ICONS.back,
                 shortcut: "ESC",
-                action: () => goToPage("index.html")
+                action: () => goToPage("charts.html")
             });
 
             return items;
@@ -637,7 +637,7 @@
         items.push({
             label: "WoA Charts Directory",
             icon: ICONS.map,
-            action: () => goToPage("index.html")
+            action: () => goToPage("charts.html")
         });
         items.push({
             label: "Settings",

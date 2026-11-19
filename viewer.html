@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Airport Chart Viewer - NAJ - WoA Charts</title>
+    <title>Airport Chart Viewer | NAJ - WoA</title>
     <link rel="icon" type="image/png" href="web-data/picture/Logoicon1.png">
     <script>
         if (localStorage.getItem("app_theme") === "dark") {
@@ -446,8 +446,8 @@
                     : displayLocation;
 
                 document.title = hasMultiple
-                    ? `${displayIata} (${activeChart.name}) - ${displayName} | NAJ - WoA Charts`
-                    : `${displayIata} - ${displayName} | NAJ - WoA Charts`;
+                    ? `${displayIata} (${activeChart.name}) - ${displayName} | NAJ - WoA`
+                    : `${displayIata} - ${displayName} | NAJ - WoA`;
 
                 // เก็บชื่อผังปัจจุบันไว้บน data attribute สำหรับเมนูคลิกขวา (Download Chart)
                 viewerImage.dataset.chartName = hasMultiple ? activeChart.name : "";
